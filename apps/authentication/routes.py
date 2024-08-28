@@ -3,7 +3,7 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
-from flask import render_template, redirect, request, url_for
+from flask import render_template, redirect, request, url_for, flash
 from flask_login import (
     current_user,
     login_user,
@@ -93,6 +93,28 @@ def register():
 
     else:
         return render_template('accounts/register.html', form=create_account_form)
+    
+
+@blueprint.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(request.url)
+    
+    file = request.files['file']
+
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(request.url)
+    
+    if file:
+        # Simpan file ke direktori tujuan
+        filepath = f"uploads/{file.filename}"
+        file.save(filepath)
+        flash('File successfully uploaded')
+
+    return redirect(url_for('index'))
+    
 
 
 @blueprint.route('/logout')
