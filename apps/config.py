@@ -5,6 +5,10 @@ Copyright (c) 2019 - present AppSeed.us
 
 import os, random, string
 
+from flaskext.mysql import MySQL
+
+
+
 class Config(object):
 
     basedir = os.path.abspath(os.path.dirname(__file__))

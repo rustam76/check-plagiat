@@ -7,10 +7,12 @@ import os
 
 from flask import Flask
 from flask_login import LoginManager
+from flaskext.mysql import MySQL
 from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
 
 
+mysql = MySQL()
 db = SQLAlchemy()
 login_manager = LoginManager()
 
