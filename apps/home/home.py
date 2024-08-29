@@ -1,19 +1,34 @@
-# -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
-
 from apps.home import blueprint
-from flask import render_template, request
-from flask_login import login_required
+from flask import render_template, request, redirect, url_for
 from jinja2 import TemplateNotFound
 
+from apps.model.documents import Document
 
-@blueprint.route('/index')
+docum = Document()
+
+@blueprint.route('/')
 # @login_required
 def index():
+    return render_template('home/index.html')
 
-    return render_template('home/index.html', segment='index')
+
+
+# Route untuk menampilkan data
+@blueprint.route('/documents', methods=['GET', 'POST'])
+def document():
+
+    if request.method == 'POST':
+        title = request.form['title']
+        abstract = request.form['abstract']
+        print(title, abstract)
+        docum.create(title, abstract)
+
+        return redirect(url_for('home_blueprint.documents'))
+
+    # Data simulasi yang akan dikirimkan ke template HTML
+    dataa = docum.get_documents_all()
+    return render_template('home/documents.html', data=dataa)
+
 
 
 @blueprint.route('/<template>')
@@ -21,7 +36,6 @@ def index():
 def route_template(template):
 
     try:
-
         if not template.endswith('.html'):
             template += '.html'
 
