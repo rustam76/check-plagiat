@@ -1,0 +1,141 @@
+{% extends "layouts/base.html" %}  
+
+{% block title %} Billing {% endblock %}  
+
+<!-- Specific Page CSS goes HERE  -->  
+{% block stylesheets %}  
+<style>  
+    /* Custom styles to ensure the loading modal is centered */  
+    .modal-dialog {  
+        display: flex;  
+        align-items: center;  
+        justify-content: center;  
+        height: 100vh; /* Full height to center vertically */  
+    }  
+</style>  
+{% endblock stylesheets %}  
+
+{% block content %}  
+
+<div class="container-fluid py-4">  
+    <div class="row">  
+        <div class="col-lg-12">  
+            <div class="row">  
+                <div class="col-md-12 mb-lg-0 mb-4">  
+                    <div class="card mt-4">  
+                        <form action="/analisis" method="POST" id="analysis-form">  
+                            <div class="card-header pb-0 p-3">  
+                                <div class="row">  
+                                    <div class="col-6 d-flex align-items-center">  
+                                        <h6 class="mb-0">Analisis Plagiarisme</h6>  
+                                    </div>  
+                                    <div class="col-6 text-end">  
+                                        <button type="submit" class="btn bg-gradient-dark mb-0">Check Plagiarisme</button>  
+                                    </div>  
+                                </div>  
+                            </div>  
+                            <div class="card-body p-3">  
+                                <div class="row">  
+                                    <div class="col-md-6 mb-md-0 mb-4">  
+                                        <label for="">Judul</label>  
+                                        <textarea name="title" id="" class="form-control border px-2"></textarea>  
+                                    </div>  
+                                    <div class="col-md-6">  
+                                        <label for="">Abstract</label>  
+                                        <textarea name="abstract" id="" class="form-control border px-2"></textarea>  
+                                    </div>  
+                                </div>  
+                            </div>  
+                        </form>  
+                    </div>  
+                </div>  
+            </div>  
+        </div>  
+    </div>  
+
+    <div class="row" id="results-container" style="display: none;">  
+        {% if results|length > 0 %}  
+            {% for result in results %}  
+            <div class="col-md-12 mt-4">  
+                <div class="card">  
+                    <div class="card-header pb-0 px-3">  
+                        <h6 class="mb-0">Information</h6>  
+                    </div>  
+                    <div class="card-body pt-4 p-3">  
+                        <ul class="list-group">  
+                            <li class="list-group-item border-0 d-flex p-4 mb-2 bg-gray-100 border-radius-lg">  
+                                <div class="d-flex flex-column">  
+                                    <h6 class="mb-3 text-sm">{{ result.title }}</h6>  
+                                    <span class="mb-2 text-xs">{{ result.abstract }}</span>  
+                                </div>  
+                                <div class="ms-auto text-end ">  
+                                    <span class="text-lg text-danger text-gradient px-3 mb-0">{{ result.similarity }} %</span>  
+                                </div>  
+                            </li>  
+                        </ul>  
+                    </div>  
+                </div>  
+            </div>  
+            {% endfor %}  
+        {% else %}  
+            <div class="col-md-12 mt-4">  
+                <div class="card">  
+                    <div class="card-header pb-0 px-3">  
+                        <h6 class="mb-0">Bebas Plagiat</h6>  
+                    </div>  
+                    <div class="card-body pt-4 p-3 text-center">  
+                        <p class="text-success">Dokumen Anda bebas dari plagiarisme.</p>  
+                    </div>  
+                </div>  
+            </div>  
+        {% endif %}  
+    </div>  
+
+    <div id="loading-overlay" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">  
+        <div class="modal-dialog modal-dialog-centered" role="document">  
+            <div class="modal-content">  
+                <div class="modal-body text-center">  
+                    <div class="spinner-border text-primary" role="status">  
+                        
+                    </div>  
+                    <span class="sr-only">Loading...</span>  
+                </div>  
+            </div>  
+        </div>  
+    </div>  
+
+    {% include 'includes/footer.html' %}  
+</div>  
+
+{% endblock content %}  
+
+<!-- Specific Page JS goes HERE  -->  
+{% block javascripts %}  
+<script>  
+    document.addEventListener('DOMContentLoaded', function() {  
+        var form = document.getElementById('analysis-form');  
+        var loadingOverlay = document.getElementById('loading-overlay');  
+        var loadingModal = new bootstrap.Modal(loadingOverlay, {  
+            backdrop: 'static',   
+            keyboard: false   
+        });  
+        var resultsContainer = document.getElementById('results-container');  
+
+        form.addEventListener('submit', function(event) {  
+            showLoading();  
+            // Remove the previous results before submitting  
+            resultsContainer.style.display = 'none';  
+            // Submit the form immediately without setTimeout  
+            form.submit();  
+        });  
+
+        function showLoading() {  
+            loadingModal.show();  
+        }  
+
+        function hideLoading() {  
+            loadingModal.hide();  
+        }  
+    });  
+</script>  
+{% endblock javascripts %}

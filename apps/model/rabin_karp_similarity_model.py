@@ -1,16 +1,21 @@
 import re
+import tensorflow as tf
+from tensorflow.keras.layers import Input, Dense, Embedding, LSTM, GlobalMaxPooling1D
+from tensorflow.keras.models import Model
+import numpy as np
+from apps.config import get_db_connection
 
 class RabinKarpSimilarityModel:
     def __init__(self, k=4, prime=101):
         self.k = k  # Panjang K-gram
         self.prime = prime  # Nilai prima untuk hashing
-
+    
     def preprocess_text(self, text):
         """Preprocess text dengan mengubah menjadi lowercase dan menghapus tanda baca"""
         text = text.lower()
         text = re.sub(r'\W+', ' ', text)
         return text
-    
+
     def k_gram_shingling(self, text):
         """Membuat K-gram shingle dari teks"""
         shingles = []
@@ -25,64 +30,84 @@ class RabinKarpSimilarityModel:
         for char in shingle:
             h = (d * h + ord(char)) % self.prime
         return h
-    
+
     def calculate_similarity(self, doc1, doc2):
-        """Menghitung tingkat similarity antara dua dokumen"""
-        # Preprocessing dokumen
+        """Menghitung tingkat similarity antara dua dokumen menggunakan Rabin-Karp"""
         doc1 = self.preprocess_text(doc1)
         doc2 = self.preprocess_text(doc2)
-        
-        # Membuat shingle
+
         shingles1 = self.k_gram_shingling(doc1)
         shingles2 = self.k_gram_shingling(doc2)
-        
-        # Menghitung hash untuk setiap shingle
+
         hash_set1 = set(self.rabin_karp_hash(shingle) for shingle in shingles1)
         hash_set2 = set(self.rabin_karp_hash(shingle) for shingle in shingles2)
-        
-        # Menghitung intersection dari hash set
+
         intersection = len(hash_set1 & hash_set2)
-        
-        # Menghitung Dice Similarity Coefficient
-        dsc = (2 * intersection) / (len(hash_set1) + len(hash_set2)) * 100
-        
+
+        dsc = round((2 * intersection) / (len(hash_set1) + len(hash_set2)) * 100)
         return dsc
+    
+    @staticmethod
+    def get_training_data():
+        """Mengambil data dari database."""
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT title, abstract FROM documents")
+        training_data = cursor.fetchall()
+        connection.close()
+        return training_data
 
-    def compute_similarity_for_dataset(self, dataset):
-        """Menghitung similarity untuk setiap pasangan dokumen dalam dataset"""
-        similarities = {}
-        n = len(dataset)
-        for i in range(n):
-            for j in range(i + 1, n):
-                doc1, doc2 = dataset[i], dataset[j]
-                title1, abstract1 = doc1['title'], doc1['abstract']
-                title2, abstract2 = doc2['title'], doc2['abstract']
-                
-                # Gabungkan judul dan abstrak
-                combined_doc1 = title1 + " " + abstract1
-                combined_doc2 = title2 + " " + abstract2
-                
-                # Hitung similarity
-                similarity = self.calculate_similarity(combined_doc1, combined_doc2)
-                
-                # Simpan hasil similarity
-                similarities[(i, j)] = similarity
-        
-        return similarities
+class DeepLearningModel:
+    def __init__(self, vocab_size=20000, embedding_dim=128, lstm_units=64):
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
+        self.lstm_units = lstm_units
+        self.model = self.build_model()
 
-# Contoh Penggunaan
-dataset = [
-    {'title': 'Machine Learning in Healthcare', 'abstract': 'Machine learning techniques are revolutionizing healthcare.'},
-    {'title': 'Applications of Machine Learning in Healthcare', 'abstract': 'The use of machine learning is growing in the healthcare industry.'},
-    {'title': 'Deep Learning in Image Recognition', 'abstract': 'Deep learning techniques have achieved state-of-the-art results in image recognition.'},
-]
+    def build_model(self):
+        """Membangun arsitektur model deep learning menggunakan LSTM."""
+        input_text = Input(shape=(None,), name='input_text')
+        x = Embedding(self.vocab_size, self.embedding_dim)(input_text)
+        x = LSTM(self.lstm_units, return_sequences=True)(x)
+        x = GlobalMaxPooling1D()(x)
+        x = Dense(64, activation='relu')(x)
+        output = Dense(1, activation='sigmoid')(x)
+        model = Model(inputs=input_text, outputs=output)
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        return model
 
-# Inisialisasi model
-model = RabinKarpSimilarityModel(k=4, prime=101)
+    def preprocess_data(self, texts):
+        """Preprocessing data untuk digunakan dalam model deep learning"""
+        tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=self.vocab_size)
+        tokenizer.fit_on_texts(texts)
+        sequences = tokenizer.texts_to_sequences(texts)
+        padded_sequences = tf.keras.preprocessing.sequence.pad_sequences(sequences, padding='post')
+        return padded_sequences, tokenizer
 
-# Menghitung similarity antara dokumen dalam dataset
-similarities = model.compute_similarity_for_dataset(dataset)
+    def predict_similarity(self, doc1, doc2, tokenizer):
+        """Menggunakan model untuk memprediksi similarity."""
+        sequences = tokenizer.texts_to_sequences([doc1, doc2])
+        padded_sequences = tf.keras.preprocessing.sequence.pad_sequences(sequences, padding='post')
+        predictions = self.model.predict(padded_sequences)
+        return predictions[0][0]
 
-# Menampilkan hasil similarity
-for pair, similarity in similarities.items():
-    print(f"Similarity between document {pair[0]} and document {pair[1]}: {similarity:.2f}%")
+class CombinedRabinKarpDeepLearningModel:
+    def __init__(self):
+        self.rabin_karp_model = RabinKarpSimilarityModel()
+        self.deep_learning_model = DeepLearningModel()
+
+    def combined_similarity(self, doc1, doc2, tokenizer):
+        """Menggabungkan similarity literal (Rabin-Karp) dan deep learning"""
+        # Menghitung similarity literal dengan Rabin-Karp
+        literal_similarity = self.rabin_karp_model.calculate_similarity(doc1, doc2)
+
+        # Menghitung similarity semantik dengan deep learning
+        semantic_similarity = self.deep_learning_model.predict_similarity(doc1, doc2, tokenizer)
+
+        # Menggabungkan hasil similarity
+        combined_score = (literal_similarity + semantic_similarity * 100) / 2
+        return combined_score
+
+# Contoh penggunaan
+
+

@@ -48,7 +48,7 @@
                     Judul
                   </th>
                   <th
-                    class=" text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2"
+                    class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2"
                   >
                     Abstrack
                   </th>
@@ -58,27 +58,78 @@
               <tbody>
                 {% for row in data %}
                 <tr>
-                  <td>{{loop.index}}</td>
-                  <td>{{row[1]}}</td>
-                  <td class="">{{row[2]}}</td>
-                  <td class="align-middle">
-                    <a
-                      href="javascript:;"
-                      class="text-secondary font-weight-bold text-xs"
-                      data-toggle="tooltip"
-                      data-original-title="Edit user"
-                    >
-                      Edit
-                    </a>
-                  </td>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ row[1] | truncate(30) }}</td>
+                    <td class="">{{ row[2] | truncate(30) }}</td>
+                    <td class="align-middle">
+                        <!-- Edit Button -->
+                        <a
+                            href="javascript:;"
+                            class="text-white btn btn-sm btn-info font-weight-bold text-xs"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editModal"
+                            data-id="{{ row[0] }}"
+                            data-title="{{ row[1] }}"
+                            data-abstract="{{ row[2] }}"
+                        >
+                            Edit
+                        </a>
+                   
+                        <a
+                            href="javascript:;"
+                            class="btn btn-sm btn-danger font-weight-bold text-xs"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteModal"
+                            data-id="{{ row[0] }}"
+                            data-title="{{ row[1] }}"
+                        >
+                            Delete
+                        </a>
+                    </td>
                 </tr>
                 {% else %}
                 <tr>
-                  <td colspan="4" class="text-center">No data available</td>
+                    <td colspan="4" class="text-center">No data available</td>
                 </tr>
                 {% endfor %}
-              </tbody>
+            </tbody>
+            
             </table>
+          </div>
+
+          <div class="d-flex justify-content-center">
+            <div>
+              {% if page > 1%}
+              <a
+                class="page-link"
+                href="{{ url_for('documents_blueprint.documents', page=page-1) }}"
+                aria-label="Previous"
+              >
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+              {% endif %} {% if page == 1 %}
+              <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+
+              {% endif %}
+            </div>
+
+            <div class="page-item disabled mx-2">
+              <a class="page-link" href="#">{{ page }}</a>
+            </div>
+
+            <div>
+              {% if data|length == ITEMS_PER_PAGE %}
+              <a
+                class="page-link"
+                href="{{ url_for('documents_blueprint.documents', page=page+1) }}"
+                aria-label="Next"
+              >
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
@@ -108,32 +159,104 @@
           </button>
         </div>
         <div class="modal-body">
-          <form role="form" method="POST" >
+          <form action="/documents" method="POST">
             <div class="input-group input-group-outline mb-3">
               <label class="form-label">Judul</label>
-              <input type="text" name="title" id="title" class="form-control ps-3" />
+              <input
+                type="text"
+                name="title"
+                id="title"
+                class="form-control ps-3"
+              />
             </div>
             <div class="input-group input-group-outline mb-3">
               <label class="form-label"></label>
-              <textarea class="form-control"name="abstract" id="abstract"  rows="3"></textarea>
+              <textarea
+                class="form-control"
+                name="abstract"
+                id="abstract"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn bg-gradient-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+              <button type="submit" class="btn bg-gradient-primary">
+                Save
+              </button>
             </div>
           </form>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn bg-gradient-secondary"
-            data-bs-dismiss="modal"
-          >
-            Close
-          </button>
-          <button type="submit" class="btn bg-gradient-primary">Save</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- modal import dataset -->
+
+  <div
+    class="modal fade"
+    id="editModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="editModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Edit Dataset</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form action="/documents/edit" method="POST">
+            <input type="hidden" id="edit-id" name="id" value="" />
+            <div class="input-group input-group-outline mb-3">
+              
+              <input
+                type="text"
+                name="title"
+                id="edit-title"
+                class="form-control ps-3"
+                value=""
+              />
+            </div>
+            <div class="input-group input-group-outline mb-3">
+              
+              <textarea
+                class="form-control"
+                name="abstract"
+                id="edit-abstract"
+                rows="3"
+              ></textarea>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn bg-gradient-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+              <button type="submit" class="btn bg-gradient-primary">
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div
     class="modal fade"
@@ -157,25 +280,54 @@
           </button>
         </div>
         <div class="modal-body">
-          <form action="/upload" method="POST" enctype="multipart/form-data">
+          <form action="/documents" method="POST" enctype="multipart/form-data">
             <div class="input-group input-group-outline mb-3">
-              <input type="file" class="form-control ps-3" />
+              <input type="file" name="file" class="form-control ps-3" />
+            </div>
+
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn bg-gradient-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+              <button type="submit" class="btn bg-gradient-primary">
+                Save
+              </button>
             </div>
           </form>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn bg-gradient-secondary"
-            data-bs-dismiss="modal"
-          >
-            Close
-          </button>
-          <button type="button" class="btn bg-gradient-primary">Save</button>
         </div>
       </div>
     </div>
   </div>
+
+
+  <!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete the document titled "<span id="delete-doc-title"></span>"?
+      </div>
+      <div class="modal-footer">
+        <form method="POST" action="/documents/delete">
+          <input type="hidden" name="id" id="delete-doc-id">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 
   {% include 'includes/footer.html' %}
 </div>
@@ -183,4 +335,39 @@
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
-{% block javascripts %}{% endblock javascripts %}
+
+{% block javascripts %}
+
+<script>
+  var editModal = document.getElementById("editModal");
+  editModal.addEventListener("show.bs.modal", function (event) {
+    var button = event.relatedTarget;
+    var id = button.getAttribute("data-id");
+    var title = button.getAttribute("data-title");
+    var abstract = button.getAttribute("data-abstract");
+    var modalTitle = editModal.querySelector("#edit-title");
+    var modalAbstract = editModal.querySelector("#edit-abstract");
+    var modalId = editModal.querySelector("#edit-id");
+
+    modalTitle.value = title;
+    modalAbstract.value = abstract;
+    modalId.value = id;
+  });
+</script>
+
+<script>
+  var deleteModal = document.getElementById('deleteModal');
+  deleteModal.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget; 
+    var docId = button.getAttribute('data-id'); 
+    var docTitle = button.getAttribute('data-title'); 
+    var modalTitle = deleteModal.querySelector('#delete-doc-title');
+    var modalIdInput = deleteModal.querySelector('#delete-doc-id');
+
+    modalTitle.textContent = docTitle; 
+    modalIdInput.value = docId; 
+  });
+</script>
+
+
+{% endblock javascripts %}
