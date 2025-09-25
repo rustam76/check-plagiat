@@ -2,7 +2,7 @@ import pandas as pd
 from scholarly import scholarly
 
 # Fungsi untuk mencari dan mengambil data dari Google Scholar
-def search_scholar(query, max_results=700):
+def search_scholar(query, max_results=1000):
     search_query = scholarly.search_pubs(query)
     results = []
 
@@ -30,7 +30,7 @@ existing_data = pd.read_excel(file_path)
 # Ambil data baru dari Google Scholar
 query = "sistem informasi"
 print(f"Mencari data baru untuk query: {query}")
-new_data_results = search_scholar(query, max_results=700)
+new_data_results = search_scholar(query, max_results=1000)
 
 # Konversi data baru ke DataFrame
 new_data = pd.DataFrame(new_data_results)

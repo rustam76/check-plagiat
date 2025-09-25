@@ -9,10 +9,19 @@
       <div class="card my-4">
         <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
           <div
-            class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3 p-3 d-flex align-items-center justify-content-between"
+            class="bg-gradient-success shadow-primary border-radius-lg pt-4 pb-3 p-3 d-flex align-items-center justify-content-between"
           >
             <h6 class="text-white text-capitalize ps-3">Dataset</h6>
+            
             <div>
+              <button
+                class="btn bg-gradient-success mr-3"
+                type="button"
+                data-bs-toggle="modal"
+                data-bs-target="#addModalImport"
+              >
+                Build Model
+              </button>
               <button
                 class="btn bg-gradient-dark mr-3"
                 type="button"
@@ -57,8 +66,9 @@
               </thead>
               <tbody>
                 {% for row in data %}
+         
                 <tr>
-                    <td>{{ loop.index }}</td>
+                    <td>{{ row[0] }}</td>
                     <td>{{ row[1] | truncate(30) }}</td>
                     <td class="">{{ row[2] | truncate(30) }}</td>
                     <td class="align-middle">
@@ -97,9 +107,10 @@
             </table>
           </div>
 
-          <div class="d-flex justify-content-center">
+          <div class="d-flex justify-content-center align-items-center">
+            <!-- Previous Button -->
             <div>
-              {% if page > 1%}
+              {% if page > 1 %}
               <a
                 class="page-link"
                 href="{{ url_for('documents_blueprint.documents', page=page-1) }}"
@@ -107,18 +118,19 @@
               >
                 <span aria-hidden="true">&laquo;</span>
               </a>
-              {% endif %} {% if page == 1 %}
-              <a class="page-link" href="#" aria-label="Previous">
+              {% else %}
+              <a class="page-link disabled" href="#" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
               </a>
-
               {% endif %}
             </div>
-
+          
+            <!-- Current Page -->
             <div class="page-item disabled mx-2">
               <a class="page-link" href="#">{{ page }}</a>
             </div>
-
+          
+            <!-- Next Button -->
             <div>
               {% if data|length == ITEMS_PER_PAGE %}
               <a
@@ -128,9 +140,19 @@
               >
                 <span aria-hidden="true">&raquo;</span>
               </a>
+              {% else %}
+              <a class="page-link disabled" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
               {% endif %}
             </div>
+          
+            <!-- Total Data -->
+            <div style="margin-left: 20px;">
+              <span>Total Data: {{ total_data }}</span>
+            </div>
           </div>
+          
         </div>
       </div>
     </div>
@@ -164,19 +186,30 @@
               <label class="form-label">Judul</label>
               <input
                 type="text"
-                name="title"
+                name="judul_plagiarisme"
                 id="title"
                 class="form-control ps-3"
+                required
               />
             </div>
             <div class="input-group input-group-outline mb-3">
               <label class="form-label"></label>
               <textarea
                 class="form-control"
-                name="abstract"
+                name="abstrak_plagiarisme"
                 id="abstract"
                 rows="3"
+                required
               ></textarea>
+            </div>
+
+            <div class="input-group input-group-outline mb-3">
+             
+              <select class="form-control" name="is_plagiarized" id="is_plagiarized" required>
+                <option value="" disabled selected>is plagiarized</option>
+                <option value="1">True</option>
+                <option value="0">False</option>
+              </select>
             </div>
 
             <div class="modal-footer">
@@ -187,7 +220,7 @@
               >
                 Close
               </button>
-              <button type="submit" class="btn bg-gradient-primary">
+              <button type="submit" class="btn bg-gradient-success">
                 Save
               </button>
             </div>
@@ -225,8 +258,8 @@
               
               <input
                 type="text"
-                name="title"
-                id="edit-title"
+                name="judul_plagiarisme"
+                id="edit-judul_plagiarisme"
                 class="form-control ps-3"
                 value=""
               />
@@ -235,10 +268,18 @@
               
               <textarea
                 class="form-control"
-                name="abstract"
-                id="edit-abstract"
+                name="abstrak_plagiarisme"
+                id="edit-abstrak_plagiarisme"
                 rows="3"
               ></textarea>
+            </div>
+
+            <div class="input-group input-group-outline mb-3">
+             
+              <select class="form-control" name="is_plagiarized" id="is_plagiarized">
+                <option value="1">True</option>
+                <option value="0">False</option>
+              </select>
             </div>
             <div class="modal-footer">
               <button
@@ -248,7 +289,7 @@
               >
                 Close
               </button>
-              <button type="submit" class="btn bg-gradient-primary">
+              <button type="submit" class="btn bg-gradient-success">
                 Save
               </button>
             </div>
@@ -293,7 +334,7 @@
               >
                 Close
               </button>
-              <button type="submit" class="btn bg-gradient-primary">
+              <button type="submit" class="btn bg-gradient-success">
                 Save
               </button>
             </div>
@@ -345,8 +386,9 @@
     var id = button.getAttribute("data-id");
     var title = button.getAttribute("data-title");
     var abstract = button.getAttribute("data-abstract");
-    var modalTitle = editModal.querySelector("#edit-title");
-    var modalAbstract = editModal.querySelector("#edit-abstract");
+    var modalTitle = editModal.querySelector("#edit-judul_plagiarisme");
+    var modalAbstract = editModal.querySelector("#edit-abstrak_plagiarisme");
+    var is_plagiarized = editModal.querySelector("#is_plagiarized");
     var modalId = editModal.querySelector("#edit-id");
 
     modalTitle.value = title;

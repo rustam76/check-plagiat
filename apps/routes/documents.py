@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import pandas as pd
 import os
 from flask_login import login_required, current_user
+from apps.config import get_db_connection
 
 
 blueprint = Blueprint('documents_blueprint', __name__)
@@ -31,29 +32,40 @@ def documents():
                 return redirect(url_for('documents_blueprint.documents'))
             
         else:    
-            title = request.form['title']
-            abstract = request.form['abstract']
-            docum.create_data(title, abstract)
+            title = request.form['judul_plagiarisme']
+            abstract = request.form['abstrak_plagiarisme']
+            is_plagiarized = request.form['is_plagiarized']
+            docum.create_data(title, abstract, is_plagiarized)
 
         return redirect(url_for('documents_blueprint.documents'))
 
     # Data simulasi yang akan dikirimkan ke template HTML
     page = request.args.get('page', 1, type=int)
     dataa = docum.get_data(page, ITEMS_PER_PAGE)
-    return render_template('home/documents.html', segment='documents', data=dataa, page=page, ITEMS_PER_PAGE=ITEMS_PER_PAGE)
+
+     # Hitung total data dari database
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM documents")
+    total_data = cursor.fetchone()[0]
+    cursor.close()
+    connection.close()
+
+    return render_template('home/documents.html', segment='documents', data=dataa, page=page, ITEMS_PER_PAGE=ITEMS_PER_PAGE, total_data=total_data)
 
 
 @blueprint.route('/documents/edit', methods=['POST'])
 def edit_document():
     document_id = request.form['id']
-    title = request.form['title']
-    abstract = request.form['abstract']
+    title = request.form['judul_plagiarisme']
+    abstract = request.form['abstrak_plagiarisme']
+    is_plagiarized = request.form['is_plagiarized']
 
     # Buat instance dari DocumentsController
     docum_controller = DocumentsController()
     
     # Panggil metode update_data pada instance
-    docum_controller.update_data(document_id, title, abstract)
+    docum_controller.update_data(document_id, title, abstract, is_plagiarized)
     
     return redirect(url_for('documents_blueprint.documents', page=1))
 

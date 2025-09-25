@@ -1,5 +1,8 @@
 from flask import render_template, request, Blueprint
-from apps.model.rabin_karp_similarity_model import CombinedRabinKarpDeepLearningModel, RabinKarpSimilarityModel
+from apps.model.rabin_karp_similarity_model import DeepLearningModel, RabinKarpSimilarityModel, SimilarityCombiner
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.models import load_model
+import os
 
 blueprint = Blueprint('analisis_blueprint', __name__)
 @blueprint.route('/analisis', methods=['GET', 'POST'])
@@ -10,34 +13,21 @@ def analisis():
         
         # Gabungkan judul dan abstrak dari input pengguna
         combined_user_doc = title + " " + abstract
-        
-        # Ambil data latih dari MySQL
-        training_data = RabinKarpSimilarityModel().get_training_data()
 
-        # Buat model gabungan Rabin-Karp dan Deep Learning
-        model = CombinedRabinKarpDeepLearningModel()
 
-        # Preprocessing data pelatihan untuk deep learning
-        training_docs = [data['title'] + " " + data['abstract'] for data in training_data]
-        padded_sequences, tokenizer = model.deep_learning_model.preprocess_data(training_docs)
+        tokenizer = Tokenizer()  # Inisialisasi tokenizer Anda (harus sesuai dengan model yang dilatih)
+        tokenizer.fit_on_texts(combined_user_doc)
 
-        results = []
-        for i, data in enumerate(training_data):
-            combined_training_doc = data['title'] + " " + data['abstract']
-            
-            # Hitung similarity gabungan antara input pengguna dan data latih
-            similarity = model.combined_similarity(combined_user_doc, combined_training_doc, tokenizer)
-            
-            # Bulatkan similarity ke 2 desimal
-            similarity_percentage = round(similarity, 2)
+        rabin_karp_model = RabinKarpSimilarityModel()
+        model_path = os.path.join(os.path.dirname(__file__), "../model/plagiat.h5")
+      
+        dl_model = DeepLearningModel(model_path=model_path, tokenizer=tokenizer)
 
-            # Filter hasil berdasarkan similarity >= 50
-            if similarity_percentage >= 50:
-                results.append({
-                    'title': data['title'],
-                    'abstract': data['abstract'],
-                    'similarity': similarity_percentage  # Tampilkan sebagai persentase bulat
-                })
+      
+
+        result = SimilarityCombiner.combine_results(title, abstract, rabin_karp_model, dl_model)
+
+        results = [result]
         
         # Tampilkan hasil analisis jika ada
         if results:

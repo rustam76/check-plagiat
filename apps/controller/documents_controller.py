@@ -22,9 +22,9 @@ class DocumentsController:
 
             data = read_data(file_path)
 
-            if not validate_data(data):
-                print("Data tidak valid")
-                return False
+            # if not validate_data(data):
+            #     print("Data tidak valid")
+            #     return False
              
             docum.create_bulk(data)
             return True
@@ -34,11 +34,10 @@ class DocumentsController:
 
     def get_data(self, page, per_page):
         try:
-            docum = Document()
-            return docum.get_documents_all(self, page, per_page)
+            return Document.get_documents_all(page, per_page)
         except Exception as e:
-            print("Document tidak valid $e")
-            return {}
+            print(f"Document tidak valid: {e}")
+            return []
     
 
     def update_data(self, document_id, title, abstract):

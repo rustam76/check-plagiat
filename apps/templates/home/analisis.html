@@ -16,7 +16,6 @@
 {% endblock stylesheets %}  
 
 {% block content %}  
-
 <div class="container-fluid py-4">  
     <div class="row">  
         <div class="col-lg-12">  
@@ -31,6 +30,7 @@
                                     </div>  
                                     <div class="col-6 text-end">  
                                         <button type="submit" class="btn bg-gradient-dark mb-0">Check Plagiarisme</button>  
+                                        <button type="button" id="reset-results" class="btn bg-gradient-danger mb-0">Reset</button>  
                                     </div>  
                                 </div>  
                             </div>  
@@ -38,11 +38,11 @@
                                 <div class="row">  
                                     <div class="col-md-6 mb-md-0 mb-4">  
                                         <label for="">Judul</label>  
-                                        <textarea name="title" id="" class="form-control border px-2"></textarea>  
+                                        <textarea name="title" id="title" class="form-control border px-2"></textarea>  
                                     </div>  
                                     <div class="col-md-6">  
                                         <label for="">Abstract</label>  
-                                        <textarea name="abstract" id="" class="form-control border px-2"></textarea>  
+                                        <textarea name="abstract" id="abstract" class="form-control border px-2"></textarea>  
                                     </div>  
                                 </div>  
                             </div>  
@@ -53,9 +53,9 @@
         </div>  
     </div>  
 
-    <div class="row" id="results-container" style="display: none;">  
-        {% if results|length > 0 %}  
-            {% for result in results %}  
+    {% if results|length > 0 %}  
+        {% for result in results %}  
+    <div class="row" id="results-container" >  
             <div class="col-md-12 mt-4">  
                 <div class="card">  
                     <div class="card-header pb-0 px-3">  
@@ -65,39 +65,29 @@
                         <ul class="list-group">  
                             <li class="list-group-item border-0 d-flex p-4 mb-2 bg-gray-100 border-radius-lg">  
                                 <div class="d-flex flex-column">  
-                                    <h6 class="mb-3 text-sm">{{ result.title }}</h6>  
-                                    <span class="mb-2 text-xs">{{ result.abstract }}</span>  
+                                    <h6 class="mb-3 text-sm">Rabin Karp Prediksi:</h6>
+                                    <span class="text-lg text-danger text-gradient px-3 mb-0">{{ result.rabin_karp_similarity }} {{ result.rabin_karp_similarity_score_percent }}</span> 
+                                     
                                 </div>  
-                                <div class="ms-auto text-end ">  
-                                    <span class="text-lg text-danger text-gradient px-3 mb-0">{{ result.similarity }} %</span>  
+                                 
+                                <div class="ms-auto text-end">  
+                                    <h6 class="mb-3 text-sm">Deep Learning Prediksi:</h6>
+                                    <span class="text-lg text-danger text-gradient px-3 mb-0">{{ result.verdict }} {{ result.dl_similarity_score_percent }}</span>  
                                 </div>  
                             </li>  
                         </ul>  
                     </div>  
                 </div>  
             </div>  
-            {% endfor %}  
-        {% else %}  
-            <div class="col-md-12 mt-4">  
-                <div class="card">  
-                    <div class="card-header pb-0 px-3">  
-                        <h6 class="mb-0">Bebas Plagiat</h6>  
-                    </div>  
-                    <div class="card-body pt-4 p-3 text-center">  
-                        <p class="text-success">Dokumen Anda bebas dari plagiarisme.</p>  
-                    </div>  
-                </div>  
-            </div>  
-        {% endif %}  
+             
     </div>  
-
+    {% endfor %}  
+    {% endif %}   
     <div id="loading-overlay" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">  
         <div class="modal-dialog modal-dialog-centered" role="document">  
             <div class="modal-content">  
                 <div class="modal-body text-center">  
-                    <div class="spinner-border text-primary" role="status">  
-                        
-                    </div>  
+                    <div class="spinner-border text-primary" role="status"></div>  
                     <span class="sr-only">Loading...</span>  
                 </div>  
             </div>  
@@ -106,7 +96,6 @@
 
     {% include 'includes/footer.html' %}  
 </div>  
-
 {% endblock content %}  
 
 <!-- Specific Page JS goes HERE  -->  
@@ -120,13 +109,16 @@
             keyboard: false   
         });  
         var resultsContainer = document.getElementById('results-container');  
+        var resetButton = document.getElementById('reset-results');  
 
         form.addEventListener('submit', function(event) {  
             showLoading();  
-            // Remove the previous results before submitting  
-            resultsContainer.style.display = 'none';  
-            // Submit the form immediately without setTimeout  
-            form.submit();  
+            clearResults();  
+        });  
+
+        resetButton.addEventListener('click', function() {  
+            clearResults();  
+            form.reset();  
         });  
 
         function showLoading() {  
@@ -135,6 +127,11 @@
 
         function hideLoading() {  
             loadingModal.hide();  
+        }  
+
+        function clearResults() {  
+            resultsContainer.style.display = 'none';  
+            resultsContainer.innerHTML = '';  
         }  
     });  
 </script>  
