@@ -11,7 +11,78 @@
         align-items: center;  
         justify-content: center;  
         height: 100vh; /* Full height to center vertically */  
-    }  
+    }
+    
+    /* Modern card styling */
+    .modern-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .modern-card:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+    
+    /* Improved button styling */
+    .btn-modern {
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 10px 24px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-modern:hover {
+        transform: translateY(-1px);
+    }
+    
+    /* Enhanced result display */
+    .result-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+        border: none;
+        margin-bottom: 1rem;
+    }
+    
+    .similar-text-card {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border: 1px solid #ffd43b;
+        border-radius: 10px;
+    }
+    
+    /* Textarea improvements */
+    .modern-textarea {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .modern-textarea:focus {
+        border-color: #4dabf7;
+        box-shadow: 0 0 0 0.2rem rgba(77, 171, 247, 0.25);
+    }
+    
+    /* Score display improvements */
+    .score-display {
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .low-risk { color: #28a745; }
+    .medium-risk { color: #ffc107; }
+    .high-risk { color: #dc3545; }
+    
+    /* Loading animation */
+    .loading-spinner {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.3em;
+    }
 </style>  
 {% endblock stylesheets %}  
 
@@ -21,28 +92,36 @@
         <div class="col-lg-12">  
             <div class="row">  
                 <div class="col-md-12 mb-lg-0 mb-4">  
-                    <div class="card mt-4">  
+                    <div class="card mt-4 modern-card">  
                         <form action="/analisis" method="POST" id="analysis-form">  
-                            <div class="card-header pb-0 p-3">  
+                            <div class="card-header pb-0 p-3 ">  
                                 <div class="row">  
                                     <div class="col-6 d-flex align-items-center">  
-                                        <h6 class="mb-0">Analisis Plagiarisme</h6>  
+                                        <h5 class="mb-0"><i class="fas fa-search me-2"></i>Analisis Plagiarisme</h5>  
                                     </div>  
                                     <div class="col-6 text-end">  
-                                        <button type="submit" class="btn bg-gradient-dark mb-0">Check Plagiarisme</button>  
-                                        <button type="button" id="reset-results" class="btn bg-gradient-danger mb-0">Reset</button>  
+                                        <button type="submit" class="btn btn-success btn-modern me-2">
+                                            <i class="fas fa-check-circle me-2"></i>Check Plagiarisme
+                                        </button>  
+                                        <button type="button" id="reset-results" class="btn bg-gradient-dark text-white">
+                                            <i class="fas fa-redo me-2"></i>Reset
+                                        </button>  
                                     </div>  
                                 </div>  
                             </div>  
-                            <div class="card-body p-3">  
+                            <div class="card-body p-4">  
                                 <div class="row">  
                                     <div class="col-md-6 mb-md-0 mb-4">  
-                                        <label for="">Judul</label>  
-                                        <textarea name="title" id="title" class="form-control border px-2"></textarea>  
+                                        <label class="form-label fw-bold text-dark mb-3">
+                                            <i class="fas fa-heading me-2"></i>Judul
+                                        </label>  
+                                        <textarea name="title" id="title" class="form-control modern-textarea" placeholder="Masukkan judul dokumen..."></textarea>  
                                     </div>  
                                     <div class="col-md-6">  
-                                        <label for="">Abstract</label>  
-                                        <textarea name="abstract" id="abstract" class="form-control border px-2"></textarea>  
+                                        <label class="form-label fw-bold text-dark mb-3">
+                                            <i class="fas fa-file-alt me-2"></i>Abstract
+                                        </label>  
+                                        <textarea name="abstract" id="abstract" class="form-control modern-textarea" placeholder="Masukkan abstrak dokumen..."></textarea>  
                                     </div>  
                                 </div>  
                             </div>  
@@ -54,41 +133,96 @@
     </div>  
 
     {% if results|length > 0 %}  
-        {% for result in results %}  
+        {% set result = results[0] %}
+    {% if result and result.plagiarism_score >= 25 %}
     <div class="row" id="results-container" >  
             <div class="col-md-12 mt-4">  
-                <div class="card">  
-                    <div class="card-header pb-0 px-3">  
-                        <h6 class="mb-0">Information</h6>  
+                <div class="card modern-card">  
+                    <div class="card-header pb-0 px-3 ">  
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Hasil Analisis</h5>  
                     </div>  
-                    <div class="card-body pt-4 p-3">  
-                        <ul class="list-group">  
-                            <li class="list-group-item border-0 d-flex p-4 mb-2 bg-gray-100 border-radius-lg">  
-                                <div class="d-flex flex-column">  
-                                    <h6 class="mb-3 text-sm">Rabin Karp Prediksi:</h6>
-                                    <span class="text-lg text-danger text-gradient px-3 mb-0">{{ result.rabin_karp_similarity }} {{ result.rabin_karp_similarity_score_percent }}</span> 
-                                     
+                    <div class="card-body pt-4 p-4">
+                        <div class="row text-center">
+                            <div class="col-md-4 mb-4">
+                                <div class="result-item p-4">
+                                    <h6 class="mb-3 text-sm text-muted">
+                                        <i class="fas fa-percentage me-2"></i>Skor Plagiarisme
+                                    </h6>
+                                    {% set risk_class = 'low-risk' if result.plagiarism_score <= 10 else 'medium-risk' if result.plagiarism_score <= 20 else 'high-risk' %}
+                                    <span class="score-display {{ risk_class }}">{{ result.plagiarism_score }}%</span> 
                                 </div>  
-                                 
-                                <div class="ms-auto text-end">  
-                                    <h6 class="mb-3 text-sm">Deep Learning Prediksi:</h6>
-                                    <span class="text-lg text-danger text-gradient px-3 mb-0">{{ result.verdict }} {{ result.dl_similarity_score_percent }}</span>  
+                            </div>
+                            <div class="col-md-4 mb-4">
+                                <div class="result-item p-4">
+                                    <h6 class="mb-3 text-sm text-muted">
+                                        <i class="fas fa-copy me-2"></i>Teks Identik
+                                    </h6>
+                                    <span class="score-display text-warning">{{ result.identical_text_percent }}%</span> 
                                 </div>  
-                            </li>  
-                        </ul>  
+                            </div>
+                            <div class="col-md-4 mb-4">
+                                <div class="result-item p-4">
+                                    <h6 class="mb-3 text-sm text-muted">
+                                        <i class="fas fa-brain me-2"></i>Mirip Semantik
+                                    </h6>
+                                    <span class="score-display text-info">{{ result.semantic_similarity_percent }}%</span>  
+                                </div>  
+                            </div>
+                        </div>
+                        
+                        {% if result.similar_text_title or result.similar_text_abstract %}
+                        <div class="mt-4">
+                            <h6 class="mb-3 text-sm text-dark fw-bold">
+                                <i class="fas fa-search-plus me-2"></i>Teks yang Mirip Ditemukan ({{ result.similarity_percentage }}% kemiripan)
+                            </h6>
+                            <div class="card similar-text-card">
+                                <div class="card-body">
+                                    {% if result.similar_text_title %}
+                                    <p class="mb-2"><strong class="text-dark">
+                                        <i class="fas fa-heading me-2"></i>Judul:
+                                    </strong> {{ result.similar_text_title }}</p>
+                                    {% endif %}
+                                    {% if result.similar_text_abstract %}
+                                    <p class="mb-0"><strong class="text-dark">
+                                        <i class="fas fa-file-alt me-2"></i>Abstrak:
+                                    </strong> {{ result.similar_text_abstract }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>  
                 </div>  
             </div>  
              
-    </div>  
-    {% endfor %}  
+    </div>
+    {% elif result and result.plagiarism_score < 25 %}
+    <div class="row" id="results-container" >  
+            <div class="col-md-12 mt-4">  
+                <div class="card modern-card">  
+                    <div class="card-header pb-0 px-3 bg-gradient-success text-white">  
+                        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Hasil Analisis</h5>  
+                    </div>  
+                    <div class="card-body pt-4 p-4 text-center">
+                        <div class="result-item p-4">
+                            <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                            <h4 class="mt-3 text-success">Tidak Terdeteksi Plagiarisme</h4>
+                            <p class="text-muted mt-2">Skor plagiarisme: {{ result.plagiarism_score }}% (di bawah 25%)</p>
+                        </div>
+                    </div>  
+                </div>  
+            </div>  
+    </div>
+    {% endif %}
     {% endif %}   
     <div id="loading-overlay" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">  
         <div class="modal-dialog modal-dialog-centered" role="document">  
             <div class="modal-content">  
-                <div class="modal-body text-center">  
-                    <div class="spinner-border text-primary" role="status"></div>  
-                    <span class="sr-only">Loading...</span>  
+                <div class="modal-body text-center p-5">  
+                    <div class="spinner-border text-primary loading-spinner" role="status"></div>  
+                    <p class="mt-3 mb-0 text-muted fw-bold">
+                        <i class="fas fa-cog me-2"></i>Menganalisis dokumen...
+                    </p>
                 </div>  
             </div>  
         </div>  

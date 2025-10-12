@@ -83,7 +83,7 @@ class RabinKarpSimilarityModel:
 
 class DeepLearningModel:
     def __init__(self, model_path, tokenizer):
-        self.model = load_model(model_path)
+        self.model = load_model(model_path ,  compile=False)
         self.tokenizer = tokenizer
 
     def preprocess_data(self, texts):
@@ -113,13 +113,32 @@ class SimilarityCombiner:
 
         # Gabungkan skor
         combined_score = (dl_score + rabin_karp_results[0]['similarity']) / 2 if rabin_karp_results else dl_score
+        
+        # Terapkan batas maksimal 25% untuk hasil plagiarisme
+        max_plagiarism_threshold = 25
+        plagiarism_score = min(round(combined_score * 100, 2), max_plagiarism_threshold)
+        
+        # Hitung persentase teks identik (dari Rabin-Karp)
+        identical_text_percent = min(rabin_karp_results[0]['similarity'], max_plagiarism_threshold)
+        
+        # Hitung persentase kemiripan semantik (dari Deep Learning)
+        semantic_similarity_percent = min(round(dl_score * 100), max_plagiarism_threshold)
 
+        # Get the most similar training document for text display
+        most_similar_doc = rabin_karp_results[0] if rabin_karp_results else None
+        
         result = {
+            "plagiarism_score": plagiarism_score,
+            "identical_text_percent": identical_text_percent,
+            "semantic_similarity_percent": semantic_similarity_percent,
             "rabin_karp_similarity": "Plagiarized" if rabin_karp_results[0]['similarity'] > 50 else "Original",
             "rabin_karp_similarity_score_percent": rabin_karp_results[0]['similarity'],
             "dl_similarity_score_percent": round(dl_score * 100),
             "combined_score_percent": round(combined_score * 100, 2),
-            "verdict": "Plagiarized" if dl_score > 0.5 else "Original"
+            "verdict": "Plagiarized" if dl_score > 0.5 else "Original",
+            "similar_text_title": most_similar_doc['training_title'] if most_similar_doc else "",
+            "similar_text_abstract": most_similar_doc['training_abstract'] if most_similar_doc else "",
+            "similarity_percentage": most_similar_doc['similarity'] if most_similar_doc else 0
         }
 
         return result
