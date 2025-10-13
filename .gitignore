@@ -40,3 +40,4 @@ apps/static/assets/.temp
 *.docx
 *.zip
 *.drawio
+*.csv
